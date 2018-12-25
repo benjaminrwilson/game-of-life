@@ -1,2 +1,7 @@
-# game-of-life
-Game of Life in PyTorch
+# Minimal implementation of Game of Life in PyTorch
+
+### Installing
+
+```
+pip install -r requirements.txt
+```
