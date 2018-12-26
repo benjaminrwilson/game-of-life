@@ -2,7 +2,6 @@ import argparse
 
 import cv2
 import torch
-import time
 from torch import ByteTensor, Tensor
 from torch.nn import Conv2d, Parameter
 from torch.nn.init import zeros_
