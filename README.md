@@ -5,3 +5,9 @@
 ```
 pip install -r requirements.txt
 ```
+
+### Running the world
+
+```
+python run.py
+```
