@@ -2,6 +2,7 @@ import argparse
 
 import cv2
 import torch
+import time
 from torch import ByteTensor, Tensor
 from torch.nn import Conv2d, Parameter
 from torch.nn.init import zeros_
@@ -30,12 +31,12 @@ def step(state, get_neighbors):
     return state
 
 
-def run_world(size, prob, tick_ratio):
+def run_world(size, prob, tick_ratio, device):
     step_count = 0
     with torch.no_grad():
         channels = 1
-        state = init_world(size, channels, prob)
-        get_neighbors = get_neighbors_map(channels)
+        state = init_world(size, channels, prob).to(device)
+        get_neighbors = get_neighbors_map(channels).to(device)
         while True:
             if should_step(step_count, tick_ratio):
                 cv2.imshow("Game of Life", state.numpy())
@@ -83,14 +84,15 @@ def main():
         '-p',
         '--prob',
         help='Probability of life in the initial seed',
-        default=.1)
+        default=.15)
     opts.add_argument(
         '-tr',
         '--tick_ratio',
         help='Ticks needed to update on time step in game',
         default=1)
     opts = opts.parse_args()
-    run_world(opts.size, opts.prob, opts.tick_ratio)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    run_world(opts.size, opts.prob, opts.tick_ratio, device)
 
 
 if __name__ == "__main__":
