@@ -83,11 +83,12 @@ def state2image(state):
     return state.squeeze(0).permute(1, 2, 0)
 
 
-def get_neighbors_map(d):
-    neighbors_filter = Conv2d(d, d, 3, padding=1)
+def get_neighbors_map(channels):
+    neighbors_filter = Conv2d(channels, channels, 3, padding=1)
     neighbors_filter.weight = Parameter(Tensor([[[[1, 1, 1],
                                                   [1, 0, 1],
-                                                  [1, 1, 1]]]]), requires_grad=False)
+                                                  [1, 1, 1]]]]),
+                                        requires_grad=False)
     neighbors_filter.bias = zeros_(neighbors_filter.bias)
     return neighbors_filter
 
@@ -149,7 +150,7 @@ def main():
         '-re',
         '--record_entropy',
         help='Should record entropy of configurations',
-        default=False)
+        default=True)
     opts = opts.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     run_world(opts, device)
