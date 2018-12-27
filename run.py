@@ -2,7 +2,6 @@ import argparse
 import itertools
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch import ByteTensor, Tensor
