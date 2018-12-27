@@ -1,10 +1,15 @@
 import argparse
+import itertools
 
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from torch import ByteTensor, Tensor
 from torch.nn import Conv2d, Parameter
 from torch.nn.init import zeros_
+
+import utils
 
 
 def step(state, get_neighbors):
@@ -30,20 +35,40 @@ def step(state, get_neighbors):
     return state
 
 
-def run_world(size, prob, tick_ratio, device):
+def run_world(opts, device):
     step_count = 0
+    size = opts.size
+    prob = opts.prob
+    tick_ratio = opts.tick_ratio
+    record_entropy = opts.record_entropy
+
+    entropies = []
     with torch.no_grad():
+        combinations = 2 ** (3 * 3)
         channels = 1
         state = init_world(size, channels, prob).to(device)
         get_neighbors = get_neighbors_map(channels).to(device)
+        structure_similarity = get_structure_similarity(combinations, channels)
+        i = 0
         while True:
             if should_step(step_count, tick_ratio):
                 cv2.imshow("Game of Life", state.numpy())
                 state = step(image2state(state), get_neighbors)
+
+                if record_entropy:
+                    entropy = get_entropy(
+                        state, structure_similarity, combinations)
+                    entropies.append(entropy)
                 state = state2image(state)
             step_count += 1
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+            i += 1
+    cv2.destroyAllWindows()
+
+    if record_entropy:
+        entropies = np.array(entropies)
+        utils.plot_entropies(entropies)
 
 
 def init_world(size, channels, prob):
@@ -68,6 +93,38 @@ def get_neighbors_map(d):
     return neighbors_filter
 
 
+def get_structure_similarity(combinations, channels):
+    tensors = torch.zeros([combinations, 1, 3, 3])
+    elems = list(map(Tensor, itertools.product([0, 1], repeat=9)))
+    for i, elem in enumerate(elems):
+        tensors[i] = elem.view(1, channels, 3, 3)
+    structure_similarity = Conv2d(
+        channels, combinations, 3, stride=3, groups=channels)
+    structure_similarity.weight = Parameter(tensors, requires_grad=False)
+    structure_similarity.bias = zeros_(structure_similarity.bias)
+    return structure_similarity
+
+
+def get_entropy(state, structure_similarity, combinations):
+    configs = structure_similarity(state)
+    match_weights = structure_similarity.weight.view(combinations, -1).sum(-1)
+    distribution = torch.zeros([combinations])
+
+    # Smooth distribution incase configuration doesn't exist
+    distribution.fill_(utils.EPSILON)
+    for i, weight in enumerate(match_weights):
+        config = configs[0][i]
+        mask = config == weight
+        distribution[i] += config[mask].shape[0]
+    distribution /= distribution.sum()
+
+    entropy = utils.entropy(distribution, 2)
+    info = "Max Event Probability: {} | Entropy: {}".format(
+        distribution.max(), entropy)
+    print(info)
+    return entropy
+
+
 def should_step(step_count, tick_ratio):
     return step_count % tick_ratio == 0
 
@@ -78,20 +135,25 @@ def main():
         '-s',
         '--size',
         help='Size of world grid',
-        default=500)
+        default=700)
     opts.add_argument(
         '-p',
         '--prob',
         help='Probability of life in the initial seed',
-        default=.15)
+        default=.05)
     opts.add_argument(
         '-tr',
         '--tick_ratio',
         help='Ticks needed to update on time step in game',
         default=1)
+    opts.add_argument(
+        '-re',
+        '--record_entropy',
+        help='Should record entropy of configurations',
+        default=False)
     opts = opts.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    run_world(opts.size, opts.prob, opts.tick_ratio, device)
+    run_world(opts, device)
 
 
 if __name__ == "__main__":
