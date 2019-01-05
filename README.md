@@ -1,8 +1,6 @@
 # Minimal implementation of Game of Life in PyTorch
 
-<p align="center">
-  <img src="https://github.com/benjaminrwilson/game-of-life/blob/master/examples/game_of_life.png" width="400" height="400">  
-</p>
+![](https://media.giphy.com/media/4ZkwQLFPw6XngcEgdA/giphy.gif)
 
 ### Installing
 
