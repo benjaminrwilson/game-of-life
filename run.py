@@ -61,7 +61,7 @@ def run_world(opts, device):
                     entropies.append(entropy)
                 state = state2image(state)
             step_count += 1
-            if cv2.waitKey(34) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             i += 1
     cv2.destroyAllWindows()
@@ -136,12 +136,12 @@ def main():
         '-s',
         '--size',
         help='Size of world grid',
-        default=50)
+        default=700)
     opts.add_argument(
         '-p',
         '--prob',
         help='Probability of life in the initial seed',
-        default=.5)
+        default=.05)
     opts.add_argument(
         '-tr',
         '--tick_ratio',
