@@ -49,6 +49,7 @@ def run_world(opts, device):
         get_neighbors = get_neighbors_map(channels).to(device)
         structure_similarity = get_structure_similarity(combinations, channels)
         i = 0
+        cv2.namedWindow("Game of Life", cv2.WINDOW_NORMAL)
         while True:
             if should_step(step_count, tick_ratio):
                 cv2.imshow("Game of Life", state.numpy())
