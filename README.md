@@ -6,6 +6,8 @@
 
 ### Installing
 
+This project requires Python 3.5 or later.
+
 ```
 pip install -r requirements.txt
 ```
