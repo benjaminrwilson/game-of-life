@@ -1,6 +1,5 @@
 # Minimal implementation of Game of Life in PyTorch
 
-![](https://media.giphy.com/media/20HLe0t0Kf7vuKnTZU/giphy.gif)
 ![](https://media.giphy.com/media/4ZkwQLFPw6XngcEgdA/giphy.gif)
 
 ### Installing
